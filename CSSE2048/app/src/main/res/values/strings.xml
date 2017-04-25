@@ -1,0 +1,9 @@
+<resources>
+    <string name="play_again">Do you want to play again?</string>
+    <string name="finalScore">Your score: %d</string>
+    <string name="basicScore">Score: %d</string>
+    <string name="zeroScore">Score: 0</string>
+    <string name="basicHighScore">Highscore: %d</string>
+    <string name="app_name">2048</string>
+    <string name="results">Your current score: %1$d, High Score: %2$d</string>
+</resources>
