@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
@@ -19,6 +20,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static android.R.attr.tunerCount;
 import static android.R.attr.x;
@@ -125,81 +128,89 @@ public class MainGame {
     }
 
     public void move(int direction) {
-        // 0: up, 1: right, 2: down, 3: left
-        animatedBoard.endAnimations();
-        if (!gameIsActive()) {
-            return;
-        }
+        final int d = direction;
+        ((Activity) mainContext).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // 0: up, 1: right, 2: down, 3: left
+                animatedBoard.endAnimations();
+                if (!gameIsActive()) {
+                    return;
+                }
 
-        prepareUndoState();
-        BoardSpot vector = getVector(direction);
-        ArrayList<Integer> traversalsX = buildTraversalsX(vector);
-        ArrayList<Integer> traversalsY = buildTraversalsY(vector);
-        boolean moved = false;
+                prepareUndoState();
+                BoardSpot vector = getVector(d);
+                ArrayList<Integer> traversalsX = buildTraversalsX(vector);
+                ArrayList<Integer> traversalsY = buildTraversalsY(vector);
+                boolean moved = false;
 
-        prepareTiles();
+                prepareTiles();
 
-        boolean test = canMoveLeft();
-        for (int x : traversalsX) {
-            for (int y : traversalsY) {
-                BoardSpot spot = new BoardSpot(x, y);
-                Tile tile = board.getSpotContent(spot);
+                boolean test = canMoveLeft();
+                for (int x : traversalsX) {
+                    for (int y : traversalsY) {
+                        BoardSpot spot = new BoardSpot(x, y);
+                        Tile tile = board.getSpotContent(spot);
 
-                if (tile != null) {
-                    BoardSpot[] positions = findFarthestPosition(spot, vector);
-                    Tile nextTile = board.getSpotContent(positions[1]);
+                        if (tile != null) {
+                            BoardSpot[] positions = findFarthestPosition(spot, vector);
+                            Tile nextTile = board.getSpotContent(positions[1]);
 
-                    if (nextTile != null && nextTile.getValue() == tile.getValue() && nextTile.getTilesMergedWith() == null) {
-                        Tile merged = new Tile(positions[1], tile.getValue() * 2);
-                        Tile[] tiles = {tile, nextTile};
-                        merged.setMergedWith(tiles);
+                            if (nextTile != null && nextTile.getValue() == tile.getValue() && nextTile.getTilesMergedWith() == null) {
+                                Tile merged = new Tile(positions[1], tile.getValue() * 2);
+                                Tile[] tiles = {tile, nextTile};
+                                merged.setMergedWith(tiles);
 
-                        board.insertTile(merged);
-                        board.removeTile(tile);
+                                board.insertTile(merged);
+                                board.removeTile(tile);
 
-                        tile.updatePosition(positions[1]);
+                                tile.updatePosition(positions[1]);
 
-                        int[] previousXandY = {x, y};
-                        animatedBoard.animateTile(merged.getX(), merged.getY(), MOVING_TILE_ANIMATION,
-                                MOVING_ANIMATION_TIME, 0, previousXandY);
-                        animatedBoard.animateTile(merged.getX(), merged.getY(), MERGING_TILE_ANIMATION,
-                                SPAWN_ANIMATION_TIME, MOVING_ANIMATION_TIME, null);
+                                int[] previousXandY = {x, y};
+                                animatedBoard.animateTile(merged.getX(), merged.getY(), MOVING_TILE_ANIMATION,
+                                        MOVING_ANIMATION_TIME, 0, previousXandY);
+                                animatedBoard.animateTile(merged.getX(), merged.getY(), MERGING_TILE_ANIMATION,
+                                        SPAWN_ANIMATION_TIME, MOVING_ANIMATION_TIME, null);
 
-                        // Update the score
-                        score = score + merged.getValue();
-                        highscore = Math.max(score, highscore);
-                        if (mainGameInterface != null) {
-                            mainGameInterface.onScoreUpdated();
+                                // Update the score
+                                score = score + merged.getValue();
+                                highscore = Math.max(score, highscore);
+                                if (mainGameInterface != null) {
+                                    mainGameInterface.onScoreUpdated();
+                                }
+
+                                // Check for 2048
+                                if (merged.getValue() == 2048) {
+                                    gameState = GAME_WIN; // Set win state
+                                    endGame(false);
+                                }
+                            } else {
+                                moveTile(tile, positions[0]);
+                                int[] previousXandY = {x, y};
+                                animatedBoard.animateTile(positions[0].getX(), positions[0].getY(), MOVING_TILE_ANIMATION,
+                                        MOVING_ANIMATION_TIME, 0, previousXandY);
+                            }
+
+                            if (!positionsEqual(spot, tile)) {
+                                moved = true;
+                            }
                         }
-
-                        // Check for 2048
-                        if (merged.getValue() == 2048) {
-                            gameState = GAME_WIN; // Set win state
-                            endGame(false);
-                        }
-                    } else {
-                        moveTile(tile, positions[0]);
-                        int[] previousXandY = {x, y};
-                        animatedBoard.animateTile(positions[0].getX(), positions[0].getY(), MOVING_TILE_ANIMATION,
-                                MOVING_ANIMATION_TIME, 0, previousXandY);
-                    }
-
-                    if (!positionsEqual(spot, tile)) {
-                        moved = true;
                     }
                 }
+                if (moved) {
+                    if (mainGameInterface != null) {
+                        mainGameInterface.playSwoosh();
+                    }
+                    saveUndoState();
+                    addRandomTile();
+                    checkIfLost();
+                }
+
+                mainBoardView.resynch();
+                mainBoardView.invalidate();
             }
-        }
-        if (moved) {
-            if (mainGameInterface != null) {
-                mainGameInterface.playSwoosh();
-            }
-            saveUndoState();
-            addRandomTile();
-            checkIfLost();
-        }
-        mainBoardView.resynch();
-        mainBoardView.invalidate();
+        });
+
     }
 
     private BoardSpot getVector(int direction) {
@@ -272,10 +283,12 @@ public class MainGame {
     }
 
     private void saveHighScore() {
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(mainContext);
-        SharedPreferences.Editor editor = p.edit();
-        editor.putFloat(HIGH_SCORE, highscore);
-        editor.apply();
+        if (!demoModeRunning) {
+            SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(mainContext);
+            SharedPreferences.Editor editor = p.edit();
+            editor.putFloat(HIGH_SCORE, highscore);
+            editor.apply();
+        }
     }
 
     private int getHighScore() {
@@ -368,7 +381,7 @@ public class MainGame {
     }
 
     public void startDemo() {
-        while (demoModeRunning && gameState == GAME_CONTINUES) {
+        if (demoModeRunning && gameState == GAME_CONTINUES) {
             if (movedLeft == false && canMoveLeft()) {
                 movedLeft = true;
                 move(IMainGame.DIRECTIONS.LEFT.ordinal());

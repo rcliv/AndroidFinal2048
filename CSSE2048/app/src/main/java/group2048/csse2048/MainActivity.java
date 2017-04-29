@@ -3,6 +3,8 @@ package group2048.csse2048;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,13 +13,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity implements IMainGame, MainGame.MainGameInterface {
+import java.util.Timer;
+import java.util.TimerTask;
 
+public class MainActivity extends AppCompatActivity implements IMainGame, MainGame.MainGameInterface {
 
     public MainGame currentGame;
     public static MediaPlayer swoosh;
     private Button demoButton;
     private boolean backButtonPressed = false;
+    private Timer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,14 +104,20 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
     }
 
     private void setHighScore(int highScore) {
-        TextView highScoreTextView = (TextView) findViewById(R.id.highScoreTextView);
-        String highScoreText = String.format(getResources().getString(R.string.basicHighScore), highScore);
-        highScoreTextView.setText(highScoreText);
+        if (!currentGame.demoModeRunning) {
+            TextView highScoreTextView = (TextView) findViewById(R.id.highScoreTextView);
+            String highScoreText = String.format(getResources().getString(R.string.basicHighScore), highScore);
+            highScoreTextView.setText(highScoreText);
+        }
     }
 
     private View.OnClickListener restartButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            if (timer != null) {
+                timer.cancel();
+                timer = null;
+            }
             currentGame.endGame(true);
             setScore(0);
             setHighScore(currentGame.highscore);
@@ -155,15 +166,27 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
     private View.OnClickListener demoButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    currentGame.startDemo();
+                }
+            };
             if (currentGame.demoModeRunning) {
+                currentGame.newGame();
                 currentGame.demoModeRunning = false;
                 demoButton.setText("Demo");
+                task.cancel();
+                timer.cancel();
+                timer = null;
             } else {
+                currentGame.endGame(true);
+                currentGame.newGame();
                 currentGame.demoModeRunning = true;
                 demoButton.setText("Stop Demo");
+                timer = new Timer();
+                timer.scheduleAtFixedRate(task, 0, 400);
             }
-            currentGame.startDemo();
-            setScores(currentGame.score, currentGame.highscore);
         }
     };
 
