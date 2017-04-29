@@ -17,6 +17,7 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
     public MainGame currentGame;
     public static MediaPlayer swoosh;
     private Button demoButton;
+    private boolean backButtonPressed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +53,10 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
     @Override
     protected void onResume() {
         super.onResume();
-        this.load();
+        if (!this.backButtonPressed) {
+            this.load();
+        }
+        this.backButtonPressed = false;
     }
 
     @Override
@@ -180,6 +184,10 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
         } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
             moveAndSetScore(DIRECTIONS.RIGHT.ordinal());
             return true;
+        } else if (keyCode == KeyEvent.KEYCODE_BACK && isTaskRoot()) {
+            if (currentGame.demoModeRunning) {
+                this.backButtonPressed = true;
+            }
         }
         return super.onKeyDown(keyCode, event);
     }
