@@ -58,6 +58,7 @@ public class BoardView extends View {
         }
 
         // set on touch listner
+        setOnTouchListener(new SwipeInputListener(this));
         game.newGame();
     }
 

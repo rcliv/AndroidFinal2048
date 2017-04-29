@@ -32,6 +32,7 @@ public class MainGame {
     public interface MainGameInterface {
         public void onNewGameStarted();
         public void playSwoosh();
+        public void onScoreUpdated();
     }
 
     public Board board = null;
@@ -167,11 +168,14 @@ public class MainGame {
                         // Update the score
                         score = score + merged.getValue();
                         highscore = Math.max(score, highscore);
+                        if (mainGameInterface != null) {
+                            mainGameInterface.onScoreUpdated();
+                        }
 
                         // Check for 2048
                         if (merged.getValue() == 2048) {
                             gameState = GAME_WIN; // Set win state
-                            endGame();
+                            endGame(false);
                         }
                     } else {
                         moveTile(tile, positions[0]);
@@ -298,7 +302,7 @@ public class MainGame {
     private void checkIfLost() {
         if (!movesAvailable() && !gameWon()) {
             gameState = GAME_LOSE;
-            endGame();
+            endGame(false);
         }
     }
 
@@ -330,7 +334,7 @@ public class MainGame {
         return false;
     }
 
-    private void endGame() {
+    void endGame(boolean restarting) {
         Resources resources = mainContext.getResources();
         if (score >= highscore) {
             highscore = score;
@@ -346,7 +350,7 @@ public class MainGame {
                         }
                     })
                     .show();
-        } else {
+        } else if (!restarting) {
             new AlertDialog.Builder(mainContext)
                     .setTitle("You Win!")
                     .setMessage(String.format(resources.getString(R.string.finalScore), score))

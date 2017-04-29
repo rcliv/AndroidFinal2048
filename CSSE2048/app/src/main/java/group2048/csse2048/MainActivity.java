@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
     private View.OnClickListener restartButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            currentGame.endGame(true);
             setScore(0);
             setHighScore(currentGame.highscore);
             currentGame.newGame();
@@ -117,6 +118,12 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
     private void setScores(int score, int highscore) {
         setScore(score);
         setHighScore(highscore);
+    }
+
+    @Override
+    public void onScoreUpdated() {
+        setScore(currentGame.score);
+        setHighScore(currentGame.highscore);
     }
 
     private void setSwipeButtonListener(View view) {
