@@ -89,6 +89,7 @@ public class MainGame {
             highscore = score;
             saveHighScore();
         }
+        highscore = getHighScore();
         setNewGameState();
         score = 0;
         addStartTiles();
