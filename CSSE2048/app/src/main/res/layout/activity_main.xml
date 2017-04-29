@@ -11,11 +11,11 @@
     tools:context="group2048.csse2048.MainActivity">
 
     <!--<fragment-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:id="@+id/boardFragment"-->
-        <!--android:name="com.practical2.BoardFragment"-->
-        <!--tools:layout="@layout/board_fragment" />-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:id="@+id/boardFragment"-->
+    <!--android:name="com.practical2.BoardFragment"-->
+    <!--tools:layout="@layout/board_fragment" />-->
 
     <TextView
         android:id="@+id/scoreTextView"
@@ -25,14 +25,15 @@
         android:text="@string/zeroScore"
         android:textSize="14sp"
         android:layout_alignParentTop="true"
-        android:layout_alignStart="@+id/restartButton" />
+        android:layout_toEndOf="@+id/rightButton" />
 
     <fragment
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/upButton"
         android:name="group2048.csse2048.BoardFragment"
-        tools:layout="@layout/board_fragment" />
+        tools:layout="@layout/board_fragment"
+        android:id="@+id/fragment" />
 
 
     <Button
@@ -80,11 +81,18 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true" />
 
+    <Button
+        android:id="@+id/demoButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Demo"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />
+
     <TextView
         android:id="@+id/highScoreTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
         android:text="HighScore: 0"
         android:layout_alignParentTop="true"
         android:layout_toStartOf="@+id/leftButton" />

@@ -1,9 +1,11 @@
 package group2048.csse2048;
 
+import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Bundle;
+import android.media.MediaPlayer;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -13,6 +15,8 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
 
 
     public MainGame currentGame;
+    public static MediaPlayer swoosh;
+    private Button demoButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,11 +33,13 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
             }
         }
 
+        swoosh = MediaPlayer.create(this, R.raw.swoosh);
+
         setContentView(mainView);
         setSwipeButtonListener(mainView);
         setRestartButtonListener(mainView);
+        setDemoButtonListener(mainView);
         setUpButtons();
-
     }
 
     @Override
@@ -105,8 +111,12 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
 
     @Override
     public void onNewGameStarted() {
-        setScore(currentGame.score);
-        setHighScore(currentGame.highscore);
+        setScores(currentGame.score, currentGame.highscore);
+    }
+
+    private void setScores(int score, int highscore) {
+        setScore(score);
+        setHighScore(highscore);
     }
 
     private void setSwipeButtonListener(View view) {
@@ -114,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
         Button downButton = (Button) view.findViewById(R.id.downButton);
         Button leftButton = (Button) view.findViewById(R.id.leftButton);
         Button rightButton = (Button) view.findViewById(R.id.rightButton);
+        demoButton = (Button) view.findViewById(R.id.demoButton);
         upButton.setOnClickListener(swipeButtonListener);
         downButton.setOnClickListener(swipeButtonListener);
         leftButton.setOnClickListener(swipeButtonListener);
@@ -124,6 +135,26 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
         Button restartButton = (Button) view.findViewById(R.id.restartButton);
         restartButton.setOnClickListener(restartButtonListener);
     }
+
+    private void setDemoButtonListener(View view) {
+        Button demoButton = (Button) view.findViewById(R.id.demoButton);
+        demoButton.setOnClickListener(demoButtonListener);
+    }
+
+    private View.OnClickListener demoButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (currentGame.demoModeRunning) {
+                currentGame.demoModeRunning = false;
+                demoButton.setText("Demo");
+            } else {
+                currentGame.demoModeRunning = true;
+                demoButton.setText("Stop Demo");
+            }
+            currentGame.startDemo();
+            setScores(currentGame.score, currentGame.highscore);
+        }
+    };
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -194,8 +225,18 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
             }
         }
 
-        setScore((int) settings.getFloat(SCORE, currentGame.score));
-        setHighScore((int) settings.getFloat(HIGH_SCORE, currentGame.highscore));
+        setScores((int) settings.getFloat(SCORE, currentGame.score), (int) settings.getFloat(HIGH_SCORE, currentGame.highscore));
         currentGame.gameState = settings.getInt(GAME_STATE, currentGame.gameState);
+    }
+
+    @Override
+    public void playSwoosh() {
+        try {
+            if (swoosh.isPlaying()) {
+                swoosh.stop();
+                swoosh.release();
+                swoosh = MediaPlayer.create(this, R.raw.swoosh);
+            } swoosh.start();
+        } catch(Exception e) { e.printStackTrace(); }
     }
 }

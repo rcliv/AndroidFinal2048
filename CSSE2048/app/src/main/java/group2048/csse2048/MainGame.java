@@ -1,14 +1,27 @@
 package group2048.csse2048;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.media.MediaPlayer;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+
+import static android.R.attr.tunerCount;
+import static android.R.attr.x;
 
 /**
  * Created by robbylagen on 4/12/17.
@@ -18,6 +31,7 @@ public class MainGame {
 
     public interface MainGameInterface {
         public void onNewGameStarted();
+        public void playSwoosh();
     }
 
     public Board board = null;
@@ -29,7 +43,9 @@ public class MainGame {
     public int lastScore = 0;
     public int bufScore = 0;
     public boolean canUndo;
+    public boolean demoModeRunning = false;
 
+    private boolean movedLeft = false;
     private final Context mainContext;
     private final BoardView mainBoardView;
     private MainGameInterface mainGameInterface = null;
@@ -107,21 +123,13 @@ public class MainGame {
         bufScore = score;
     }
 
-    public void revertUndoState() {
-        if (canUndo) {
-            canUndo = false;
-            board.revertTiles();
-            score = lastScore;
-            mainBoardView.invalidate();
-        }
-    }
-
     public void move(int direction) {
         // 0: up, 1: right, 2: down, 3: left
         animatedBoard.endAnimations();
         if (!gameIsActive()) {
             return;
         }
+
         prepareUndoState();
         BoardSpot vector = getVector(direction);
         ArrayList<Integer> traversalsX = buildTraversalsX(vector);
@@ -130,6 +138,7 @@ public class MainGame {
 
         prepareTiles();
 
+        boolean test = canMoveLeft();
         for (int x : traversalsX) {
             for (int y : traversalsY) {
                 BoardSpot spot = new BoardSpot(x, y);
@@ -178,6 +187,9 @@ public class MainGame {
             }
         }
         if (moved) {
+            if (mainGameInterface != null) {
+                mainGameInterface.playSwoosh();
+            }
             saveUndoState();
             addRandomTile();
             checkIfLost();
@@ -315,7 +327,6 @@ public class MainGame {
                 }
             }
         }
-
         return false;
     }
 
@@ -351,6 +362,84 @@ public class MainGame {
     private void setNewGameState() {
         gameState = GAME_CONTINUES;
     }
+
+    public void startDemo() {
+        while (demoModeRunning && gameState == GAME_CONTINUES) {
+            if (movedLeft == false && canMoveLeft()) {
+                movedLeft = true;
+                move(IMainGame.DIRECTIONS.LEFT.ordinal());
+            } else if (canMoveUp()) {
+                movedLeft = false;
+                move(IMainGame.DIRECTIONS.UP.ordinal());
+            } else if (canMoveRight()) {
+                movedLeft = false;
+                move(IMainGame.DIRECTIONS.RIGHT.ordinal());
+            } else if (canMoveDown()) {
+                movedLeft = false;
+                move(IMainGame.DIRECTIONS.DOWN.ordinal());
+            }
+        }
+    }
+
+    private boolean canMoveLeft() {
+        return canMoveInDirection(IMainGame.DIRECTIONS.LEFT);
+    }
+    private boolean canMoveUp() {
+        return canMoveInDirection(IMainGame.DIRECTIONS.UP);
+    }
+    private boolean canMoveRight() {
+        return canMoveInDirection(IMainGame.DIRECTIONS.RIGHT);
+    }
+    private boolean canMoveDown() {
+        return canMoveInDirection(IMainGame.DIRECTIONS.DOWN);
+    }
+
+    private boolean canMoveInDirection(IMainGame.DIRECTIONS directions) {
+        prepareUndoState();
+        BoardSpot vector = getVector(directions.ordinal());
+        ArrayList<Integer> traversalsX = buildTraversalsX(vector);
+        ArrayList<Integer> traversalsY = buildTraversalsY(vector);
+        boolean canMove = false;
+        for (int x : traversalsX) {
+            for (int y : traversalsY) {
+                BoardSpot spot = new BoardSpot(x, y);
+                Tile tile = board.getSpotContent(spot);
+
+                if (tile != null) {
+                    BoardSpot[] positions = findFarthestPosition(spot, vector);
+                    Tile nextTile = board.getSpotContent(positions[1]);
+                    if (nextTile != null) {
+                        if (nextTile.getValue() == tile.getValue()) {
+                            return true;
+                        }
+                        else if (nextTile.getY() - tile.getY() > 1 || nextTile.getX() - tile.getX() > 1) {
+                            return true;
+                        } else if (positionsEqual(spot, tile)) {
+                            canMove = false;
+                        }
+                    }else if (directions == IMainGame.DIRECTIONS.LEFT) {
+                        if (board.getSpotContent(0, tile.getY()) == null) {
+                            return true;
+                        }
+                    }else if (directions == IMainGame.DIRECTIONS.RIGHT) {
+                        if (board.getSpotContent(3, tile.getY()) == null) {
+                            return true;
+                        }
+                    }else if (directions == IMainGame.DIRECTIONS.UP) {
+                        if (board.getSpotContent(tile.getX(), 0) == null) {
+                            return true;
+                        }
+                    }else if (directions == IMainGame.DIRECTIONS.DOWN) {
+                        if (board.getSpotContent(tile.getX(), 3) == null) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return canMove;
+    }
+
 }
 
 

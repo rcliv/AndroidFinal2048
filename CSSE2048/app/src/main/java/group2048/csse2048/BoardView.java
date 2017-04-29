@@ -35,8 +35,6 @@ public class BoardView extends View {
     private final BitmapDrawable[] bitmapCell = new BitmapDrawable[numTileTypes];
 
     private Drawable boardBackgroud;
-    private Drawable lightUpRec;
-    private Drawable fadeRec;
 
     private int tileSize = 0;
     private int boardWidth = 0;
@@ -54,8 +52,6 @@ public class BoardView extends View {
         game = new MainGame(context, this);
         try {
             boardBackgroud = getDrawable(R.drawable.board_backgroud);
-            lightUpRec = getDrawable(R.drawable.light_up_rec);
-            fadeRec  = getDrawable(R.drawable.fade_rec);
             paint.setAntiAlias(true);
         } catch (Exception e) {
             Log.e("BoardView", "Error getting assets", e);
