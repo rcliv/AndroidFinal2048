@@ -2,29 +2,14 @@ package group2048.csse2048;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.media.MediaPlayer;
-import android.os.AsyncTask;
-import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.DialogFragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import static android.R.attr.tunerCount;
-import static android.R.attr.x;
 
 /**
  * Created by robbylagen on 4/12/17.
@@ -48,6 +33,7 @@ public class MainGame {
     public int bufScore = 0;
     public boolean canUndo;
     public boolean demoModeRunning = false;
+    private boolean isSoundOn = true;
 
     private boolean movedLeft = false;
     private final Context mainContext;
@@ -199,7 +185,7 @@ public class MainGame {
                     }
                 }
                 if (moved) {
-                    if (mainGameInterface != null) {
+                    if (mainGameInterface != null && isSoundOn) {
                         mainGameInterface.playSwoosh();
                     }
                     saveUndoState();
@@ -456,6 +442,14 @@ public class MainGame {
             }
         }
         return canMove;
+    }
+
+    public void toggleSound() {
+        isSoundOn = !isSoundOn;
+    }
+
+    public boolean getSoundStatus() {
+        return isSoundOn;
     }
 
 }

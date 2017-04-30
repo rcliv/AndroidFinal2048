@@ -2,13 +2,18 @@ package group2048.csse2048;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -28,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        LayoutInflater test = getLayoutInflater();
         View mainView = getLayoutInflater().inflate(R.layout.activity_main, null);
         System.out.println(mainView.getWidth() + "  " + mainView.getHeight());
         BoardView boardView = new BoardView(this);
@@ -42,6 +48,9 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
         swoosh = MediaPlayer.create(this, R.raw.swoosh);
 
         setContentView(mainView);
+
+        Toolbar toolbar = (Toolbar)findViewById(R.id.settingsToolBar);
+        setSupportActionBar(toolbar);
         setSwipeButtonListener(mainView);
         setRestartButtonListener(mainView);
         setDemoButtonListener(mainView);
@@ -53,6 +62,24 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
         super.onSaveInstanceState(outState);
         outState.putBoolean("hasState", true);
         this.save();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (currentGame.getSoundStatus()) {
+            item.setIcon(getResources().getDrawable(R.drawable.ic_volume_off_24dp, null));
+        } else {
+            item.setIcon(getResources().getDrawable(R.drawable.ic_volume_up_24dp, null));
+        }
+        currentGame.toggleSound();
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

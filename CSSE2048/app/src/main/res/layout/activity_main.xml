@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,12 +12,17 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="group2048.csse2048.MainActivity">
 
-    <!--<fragment-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:id="@+id/boardFragment"-->
-    <!--android:name="com.practical2.BoardFragment"-->
-    <!--tools:layout="@layout/board_fragment" />-->
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/settingsToolBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        />
 
     <TextView
         android:id="@+id/scoreTextView"
@@ -24,36 +31,36 @@
         android:elevation="22dp"
         android:text="@string/zeroScore"
         android:textSize="14sp"
-        android:layout_alignParentTop="true"
-        android:layout_toEndOf="@+id/rightButton" />
+        android:layout_above="@+id/upButton"
+        android:layout_alignStart="@+id/restartButton" />
 
     <fragment
+        android:id="@+id/fragment"
+        android:name="group2048.csse2048.BoardFragment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/upButton"
-        android:name="group2048.csse2048.BoardFragment"
-        tools:layout="@layout/board_fragment"
-        android:id="@+id/fragment" />
+        android:layout_below="@+id/settingsToolBar"
+        tools:layout="@layout/board_fragment" />
 
 
     <Button
         android:id="@+id/upButton"
         android:layout_width="@dimen/box_size"
         android:layout_height="@dimen/box_size"
-        android:layout_above="@+id/leftButton"
-        android:layout_centerHorizontal="true"
         android:background="@drawable/arrow_icon_up"
-        android:tag="0" />
+        android:tag="0"
+        android:layout_above="@+id/rightButton"
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:id="@+id/downButton"
         android:layout_width="@dimen/box_size"
         android:layout_height="@dimen/box_size"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="48dp"
-        android:layout_toEndOf="@+id/leftButton"
         android:tag="2"
-        android:background="@drawable/arrow_icon_up"/>
+        android:background="@drawable/arrow_icon_up"
+        android:layout_alignTop="@+id/restartButton"
+        android:layout_toEndOf="@+id/leftButton" />
 
     <Button
         android:id="@+id/rightButton"
@@ -93,8 +100,9 @@
         android:id="@+id/highScoreTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:elevation="22dp"
         android:text="HighScore: 0"
-        android:layout_alignParentTop="true"
+        android:layout_alignBottom="@+id/fragment"
         android:layout_toStartOf="@+id/leftButton" />
 
 </RelativeLayout>
