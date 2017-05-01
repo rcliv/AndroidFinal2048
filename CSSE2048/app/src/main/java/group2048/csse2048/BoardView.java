@@ -34,16 +34,13 @@ public class BoardView extends View {
     private final Paint paint = new Paint();
     private final BitmapDrawable[] bitmapCell = new BitmapDrawable[numTileTypes];
 
-    private Drawable boardBackgroud;
+    private Drawable boardBackground;
 
     private int tileSize = 0;
     private int boardWidth = 0;
     private float textSize = 0;
-    private float tileTextSize = 0;
 
     public static final int BASE_ANIMATION_TIME = 100000000;
-    private static final float TILE_MERGING_ACCELERATION = (float) -0.5;
-    private static final float TILE_INITIAL_SPEED = (1 - TILE_MERGING_ACCELERATION) / 10;
 
     public BoardView(Context context) {
         super(context);
@@ -51,7 +48,7 @@ public class BoardView extends View {
         // Load Resources
         game = new MainGame(context, this);
         try {
-            boardBackgroud = getDrawable(R.drawable.board_backgroud);
+            boardBackground = getDrawable(R.drawable.board_backgroud);
             paint.setAntiAlias(true);
         } catch (Exception e) {
             Log.e("BoardView", "Error getting assets", e);
@@ -83,7 +80,7 @@ public class BoardView extends View {
         super.onSizeChanged(width, height, oldW, oldH);
         getLayout(width, height);
         createBitmapTiles();
-        createBitmapBackgroud(width, height);
+        createBitmapBackground(width, height);
     }
 
     private void drawCells(Canvas canvas) {
@@ -122,24 +119,7 @@ public class BoardView extends View {
                 animated = true;
             if (!animatedTile.isAnimationActive())
                 continue;
-//            if (animatedTile.getAnimation() == MainGame.NEW_TILE_ANIMATION) {
-//                double percentageFinished = animatedTile.animationPercentageFinished();
-//                float textScaleSize = (float) (percentageFinished);
-//                paint.setTextSize(textSize * textScaleSize);
-//
-//                float tileScaleSize = tileSize / 2 * (1 - textScaleSize);
-//                bitmapCell[index].setBounds((int) (startX + tileScaleSize), (int) (startY + tileScaleSize), (int) (endX - tileScaleSize), (int) (endX - tileScaleSize));
-//                bitmapCell[index].draw(canvas);
-//            } else if (animatedTile.getAnimation() == MainGame.MERGING_TILE_ANIMATION) {
-//                double percentageFinished = animatedTile.animationPercentageFinished();
-//                float textScaleSize = (float) (1 + TILE_INITIAL_SPEED * percentageFinished
-//                        + TILE_MERGING_ACCELERATION * percentageFinished * percentageFinished / 2);
-//                paint.setTextSize(textSize * textScaleSize);
-//
-//                float tileScaleSize = tileSize / 2 * (1 - textScaleSize);
-//                bitmapCell[index].setBounds((int) (startX + tileScaleSize), (int) (startY + tileScaleSize), (int) (endX - tileScaleSize), (int) (endY - tileScaleSize));
-//                bitmapCell[index].draw(canvas);
-/*            } else */ if (animatedTile.getAnimation() == MainGame.MOVING_TILE_ANIMATION) {
+            if (animatedTile.getAnimation() == MainGame.MOVING_TILE_ANIMATION) {
                 double percentDone = animatedTile.animationPercentageFinished();
                 int tempIndex = index;
                 if (animatedTiles.size() >= 2) {
@@ -176,14 +156,9 @@ public class BoardView extends View {
         startingY = (int) (screenMidY - (tileSize + boardWidth) * halfNumSquaresY - boardWidth / 2);
         endingY = (int) (screenMidY + (tileSize + boardWidth) * halfNumSquaresY + boardWidth / 2);
 
-        //paint.setTextSize(tileSize);
         textSize = tileSize * tileSize / Math.max(tileSize, paint.measureText("0000"));
 
         paint.setTextAlign(Paint.Align.CENTER);
-        //paint.setTextSize(1000);
-
-        //paint.setTextSize(tileSize);
-        tileTextSize = textSize;
     }
 
     private void createBitmapTiles() {
@@ -199,7 +174,7 @@ public class BoardView extends View {
         }
     }
 
-    private void createBitmapBackgroud(int width, int height) {
+    private void createBitmapBackground(int width, int height) {
         background = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(background);
         drawBackground(canvas);
@@ -233,7 +208,7 @@ public class BoardView extends View {
     }
 
     private void drawBackground(Canvas canvas) {
-        drawDrawable(canvas, boardBackgroud, startingX, startingY, endingX, endingY);
+        drawDrawable(canvas, boardBackground, startingX, startingY, endingX, endingY);
     }
 
     private void drawBackgroundBoard(Canvas canvas) {
