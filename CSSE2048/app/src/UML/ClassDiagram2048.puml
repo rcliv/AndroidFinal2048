@@ -1,0 +1,79 @@
+@startuml
+
+abstract class AbstractList
+abstract AbstractCollection
+interface List
+interface Collection
+
+List <|-- AbstractList
+Collection <|-- AbstractCollection
+
+Collection <|- List
+AbstractCollection <|- AbstractList
+AbstractList <|-- ArrayList
+
+class ArrayList {
+Object[] elementData
+size()
+}
+
+enum TimeUnit {
+DAYS
+HOURS
+MINUTES
+}
+
+class AnimatedBoard {
+    -ArrayList<AnimatedTile>[][] animatedBoard
+    -int activeAnimations
+    -boolean lastActiveTile
+
+    +AnimatedBoard(int x, int y)
+    +animateTile(int x, int y, int animation, long animationTime, long animationDelay, int[] previousXandY)
+    +isAnimationActive()
+    +getAnimatedTileFromBoard(int x, int y)
+    +endAnimations()
+    +endAnimation(AnimatedTile animatedTile)
+    +increaseAnimationTimeElapsedForAll(double animationTimeElapsed)
+}
+
+class AnimatedTile extends BoardSpot {
+
+}
+
+class Board {
+    +Tile[][] board
+    +Tile[][] undoBoard
+    +Tile[][] bufferedBoard
+
+    +Board(int xSize, int ySize)
+    +getRandomAvailableBoardSpot()
+    -getAllAvailableBoardSpots()
+    +areBoardSpotsAvailable()
+    +isBoardSpotAvailable(BoardSpot spot)
+    +getSpotContent(BoardSpot spot)
+    +getSpotContent(int x, int y)
+    +isSpotWithinBounds(BoardSpot spot)
+    +isSpotWithinBounds(int x, int y)
+    +insertTile(Tile tile)
+    +removeTile(Tile tile)
+    +saveTiles()
+    +prepareSaveTiles()
+    +revertTiles()
+    +clearBoard()
+    +clearUndoBoard()
+}
+
+class Tile extends BoardSpot {
+    +int value
+    -Tile[] mergedWith
+
+    +Tile(int x, int y, int value)
+    +Tile(BoardSpot spot, int value)
+    +updatePosition(BoardSpot spot)
+    +getValue()
+    +getTilesMergedWith()
+    +setMergedWith(Tile[] tiles)
+}
+
+@enduml
