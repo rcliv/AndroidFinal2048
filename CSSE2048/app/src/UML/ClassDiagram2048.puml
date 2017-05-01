@@ -1,27 +1,13 @@
 @startuml
 
-abstract class AbstractList
-abstract AbstractCollection
-interface List
-interface Collection
-
-List <|-- AbstractList
-Collection <|-- AbstractCollection
-
-Collection <|- List
-AbstractCollection <|- AbstractList
-AbstractList <|-- ArrayList
-
-class ArrayList {
-Object[] elementData
-size()
-}
-
-enum TimeUnit {
-DAYS
-HOURS
-MINUTES
-}
+BoardView "1" <-- "1" SwipeInputListener
+MainActivity "1" <-- "1" BoardView
+MainActivity "1" <-- "1" MainGame
+MainActivity "1" <-- "1" BoardFragment
+MainGame "1" <-- "1" AnimatedBoard
+MainGame "1" <-- "1"Board
+Board "1" <-- "*" Tile
+AnimatedBoard "1" <-- "*" AnimatedTile
 
 class AnimatedBoard {
     -ArrayList<AnimatedTile>[][] animatedBoard
@@ -38,7 +24,18 @@ class AnimatedBoard {
 }
 
 class AnimatedTile extends BoardSpot {
+    -int animation
+    -double animationTime
+    -double animationDelay
+    -double animationTimeElapsed
+    +int[] previousXandY
 
+    +AnimatedTile(int x, int y, int animation, long animation, long animationDelay, int[] previousXandY)
+    +getAnimation()
+    +animationPercentageFinished()
+    +increaseAnimationTimeElapsed(double timeElapsed)
+    +isAnimationFinished()
+    +isAnimationActive()
 }
 
 class Board {
@@ -62,6 +59,194 @@ class Board {
     +revertTiles()
     +clearBoard()
     +clearUndoBoard()
+}
+
+class BoardFragment extends Fragment {
+    -IMainGame listener
+
+    +onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    +onAttach(Context context)
+    +onDetach()
+}
+
+class BoardSpot {
+    -int x
+    -int y
+
+    +BoardSpot(int x, int y)
+    +getX()
+    +getY()
+    +setX()
+    +setY()
+}
+
+class BoardView extends View {
+    +int startingX
+    +int startingY
+    +int endingX
+    +int endingY
+    +int iconSize
+    +int numTileTypes
+    +MainGame game
+    +boolean refresh
+    +boolean lastRefresh
+    +double lastRefreshTime
+    -Bitmap background
+    -Paint paint
+    -BitmapDrawable[] bitmapCell
+    -Drawable boardBackground
+    -int tileSize
+    -int boardWidth
+    -float textSize
+    +int BASE_ANIMATION_TIME
+    -float TILE_MERGING_ACCELERATION
+
+    +BoardView(Context context)
+    +onDraw(Canvas canvas)
+    -onSizeChanged(int width, int height, int oldW, int oldH)
+    -drawCells(Canvas canvas)
+    -animateTile(Canvas canvas, int startX, int endX, int startY, int endY, Tile currentTile, int index, ArrayList<AnimatedTile> animatedTiles, boolean animated)
+    -getLayout(int width, int height
+    -createBitmapTiles()
+    -createBitmapBackground(int width, int height)
+    -getDrawable(int resId)
+    -drawDrawable(Canvas canvas, Drawable draw, int startingX, int startingY, int endingX, int endingY)
+    -drawTileText(Canvas canvas, int value)
+    -scaleTextSize(int value)
+    -drawBackground(Canvas canvas)
+    -drawBackgroundBoard(Canvas canvas)
+    -getTileIds()
+    -centerText()
+    -log2(int n)
+    +resynch()
+    -increaseTimeElapsed()
+}
+
+interface IMainGame {
+    +enum DIRECTIONS { UP, RIGHT, LEFT, DOWN }
+    +setCurrentGame(MainGame currentGame)
+}
+
+class MainActivity extends AppCompatActivity implements IMainGame, MainGameInterface {
+    +MainGame currentGame
+    +MediaPlayer swoosh
+    -Button demoButton
+    -boolean backButtonPressed = false
+    -Timer timer
+
+    -onCreate(Bundle savedInstanceState)
+    -onSaveInstanceState(Bundle outState)
+    +onCreateOptionsMenu(Menu menu)
+    +onOptionsItemSelected(MenuItem item)
+    -onResume()
+    -onPause()
+    -setUpButtons()
+    +setCurrentGame(MainGame game)
+    -setScore(int score)
+    -setHighScore(int highScore)
+    +onNewGameStarted()
+    -setScores(int score, int highscore)
+    +onScoreUpdated()
+    -moveAndSetScore(int direction)
+    -save()
+    -load()
+    +playSwoosh()
+    +endDemo()
+}
+
+class MainGame {
+    +Board board
+    +AnimatedBoard animatedBoard
+    +final int numTilesX
+    +final int numTilesY
+    +int highscore
+    +int score
+    +int lastScore
+    +int bufScore
+    +boolean canUndo
+    +boolean demoModeRunning
+    -boolean isSoundOn
+    -boolean movedLeft
+    -boolean movedRight
+    -boolean movedUp
+    -Context mainContext
+    -BoardView mainBoardView
+    -MainGameInterface mainGameInterface
+    -String HIGH_SCORE
+    -int GAME_WIN
+    -int GAME_LOSE
+    -int GAME_CONTINUES
+    +int gameState
+    +int NEW_TILE_ANIMATION
+    +int MOVING_TILE_ANIMATION
+    +int MERGING_TILE_ANIMATION
+    -int MOVING_ANIMATION_TIME
+    -int SPAWN_ANIMATION_TIME
+
+    +MainGame(Context context, BoardView boardView)
+    +setGameInterface(MainGameInterface gameInterface)
+    +newGame()
+    -prepareTiles()
+    -moveTile(Tile tile, BoardSpot spot)
+    -saveUndoState()
+    -prepareUndoState()
+    +move(int direction)
+    -getVector(int direction)
+    -buildTraversalsX(BoardSpot vector)
+    -buildTraversalsY(BoardSpot vector)
+    -findFarthestPosition(BoardSpot spot, BoardSpot vector)
+    -addStartTiles()
+    -addRandomTile()
+    -spawnTile(Tile tile)
+    -saveHighScore()
+    -getHighScore()
+    +gameWon
+    +gameLost()
+    +gameIsActive()
+    -positionsEqual(BoardSpot first, BoardSpot second)
+    -checkIfLost()
+    -movesAvailable()
+    -checkPossibleMoves()
+    +endGame()
+    -setNewGameState()
+    +startDemo()
+    -canMoveLeft()
+    -canMoveRight()
+    -canMoveUp()
+    -canMoveDown()
+    -canMoveInDirection(IMainGame.DIRECTIONS directions)
+    +toggleSound()
+    +getSoundStatus()
+}
+
+interface MainGameInterface {
+    +onNewGameStarted()
+    +playSwoosh()
+    +onScoreUpdated()
+    +endDemo()
+}
+
+class SwipeInputListener implements View.OnTouchListener {
+    -int MIN_SWIPE_DISTANCE
+    -int SWIPE_VELOCITY_THRESHOLD
+    -int MOVE_THRESHOLD
+    -int RESET_POSITION
+    -BoardView boardView
+    -float x
+    -float y
+    -float lastDx
+    -float lastDy
+    -float previousX
+    -float previousY
+    -float startingX
+    -float startingY
+    -int previousDirection
+    -int mostRecentDirection
+    -boolean hasMoved
+
+    +SwipeInputListener(BoardView boardView)
+    +onTouch(View v, MotionEvent event)
+    -pathMoved()
 }
 
 class Tile extends BoardSpot {
