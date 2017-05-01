@@ -15,6 +15,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".AboutGroupActivity"
+            android:label="@string/about_group"
+            android:parentActivityName=".MainActivity">
+
+        </activity>
     </application>
 
 </manifest>
