@@ -1,0 +1,41 @@
+
+@startuml
+
+Actor User
+
+User -> 2048: open
+2048 -> MainGame: newGame
+MainGame -> BoardView: loadBoard
+par while !end of game && score < 2048
+2048 <-- BoardView: updateBoard
+else
+opt userSwiped
+User -> 2048: swipe
+2048 -> MainGame: move[direction]
+MainGame -> BoardView: mergeTiles
+2048 <-- BoardView: updateBoard
+end
+end
+
+User <-- MainGame: gameOver
+
+
+@enduml
+
+@startuml
+
+Actor User
+
+User -> 2048: open
+2048 -> MainGame: demoGame
+MainGame -> BoardView: loadBoard
+par while !end of game && score < 2048
+2048 <-- BoardView: updateBoard
+else
+2048 -> MainGame: move[direction]
+MainGame -> BoardView: mergeTiles
+2048 <-- BoardView: updateBoard
+end
+
+User <-- MainGame: gameOver
+@enduml
