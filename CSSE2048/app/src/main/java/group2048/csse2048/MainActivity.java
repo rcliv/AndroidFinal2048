@@ -1,6 +1,7 @@
 package group2048.csse2048;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
@@ -73,12 +74,17 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        if (currentGame.getSoundStatus()) {
-            item.setIcon(getResources().getDrawable(R.drawable.ic_volume_off_24dp, null));
-        } else {
-            item.setIcon(getResources().getDrawable(R.drawable.ic_volume_up_24dp, null));
+        if (item.getItemId() == R.id.muteIcon) {
+            if (currentGame.getSoundStatus()) {
+                item.setIcon(getResources().getDrawable(R.drawable.ic_volume_off_24dp, null));
+            } else {
+                item.setIcon(getResources().getDrawable(R.drawable.ic_volume_up_24dp, null));
+            }
+            currentGame.toggleSound();
+        } else if (item.getItemId() == R.id.about) {
+            Intent aboutIntent = new Intent(this, AboutGroupActivity.class);
+            startActivity(aboutIntent);
         }
-        currentGame.toggleSound();
         return super.onOptionsItemSelected(item);
     }
 
