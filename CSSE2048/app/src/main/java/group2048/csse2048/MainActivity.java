@@ -91,10 +91,15 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
     @Override
     protected void onResume() {
         super.onResume();
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = settings.edit();
+        this.backButtonPressed = settings.getBoolean(BACK_KEY_PRESSED, false);
         if (!this.backButtonPressed) {
             this.load();
         }
         this.backButtonPressed = false;
+        editor.putBoolean(BACK_KEY_PRESSED, this.backButtonPressed);
+        editor.apply();
     }
 
     @Override
@@ -287,6 +292,7 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
     private static final String HIGH_SCORE = "pref_highScore";
     private static final String GAME_STATE = "pref_gameState";
     private static final String IS_DEMO_MODE = "pref_demoMode";
+    private static final String BACK_KEY_PRESSED = "pref_backKeyPressed";
 
     private void save() {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
@@ -308,6 +314,7 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
         editor.putFloat(HIGH_SCORE, currentGame.highscore);
         editor.putInt(GAME_STATE, currentGame.gameState);
         editor.putBoolean(IS_DEMO_MODE, currentGame.demoModeRunning);
+        editor.putBoolean(BACK_KEY_PRESSED, this.backButtonPressed);
         editor.commit();
     }
 
