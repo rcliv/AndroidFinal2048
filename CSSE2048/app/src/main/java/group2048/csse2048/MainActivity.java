@@ -199,29 +199,56 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
     private View.OnClickListener demoButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            TimerTask task = new TimerTask() {
-                @Override
-                public void run() {
-                    currentGame.startDemo();
-                }
-            };
-            if (currentGame.demoModeRunning) {
-                currentGame.newGame();
-                currentGame.demoModeRunning = false;
-                demoButton.setText("Demo");
-                task.cancel();
-                timer.cancel();
-                timer = null;
-            } else {
-                currentGame.endGame(true);
-                currentGame.newGame();
-                currentGame.demoModeRunning = true;
-                demoButton.setText("Stop Demo");
-                timer = new Timer();
-                timer.scheduleAtFixedRate(task, 0, 500);
-            }
+            runDemoFresh();
         }
     };
+
+    @Override
+    public void runDemo() {
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                currentGame.startDemo();
+            }
+        };
+        if (!currentGame.demoModeRunning) {
+            currentGame.demoModeRunning = false;
+            currentGame.endGame(true);
+            demoButton.setText("Demo");
+            task.cancel();
+            timer.cancel();
+            timer = null;
+        } else {
+            currentGame.demoModeRunning = true;
+            demoButton.setText("Stop Demo");
+            timer = new Timer();
+            timer.scheduleAtFixedRate(task, 0, 500);
+        }
+    }
+
+    private void runDemoFresh() {
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                currentGame.startDemo();
+            }
+        };
+        if (currentGame.demoModeRunning) {
+            currentGame.newGame();
+            currentGame.demoModeRunning = false;
+            demoButton.setText("Demo");
+            task.cancel();
+            timer.cancel();
+            timer = null;
+        } else {
+            currentGame.endGame(true);
+            currentGame.newGame();
+            currentGame.demoModeRunning = true;
+            demoButton.setText("Stop Demo");
+            timer = new Timer();
+            timer.scheduleAtFixedRate(task, 0, 500);
+        }
+    }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -259,6 +286,7 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
     private static final String SCORE = "pref_score";
     private static final String HIGH_SCORE = "pref_highScore";
     private static final String GAME_STATE = "pref_gameState";
+    private static final String IS_DEMO_MODE = "pref_demoMode";
 
     private void save() {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
@@ -279,8 +307,8 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
         editor.putFloat(SCORE, currentGame.score);
         editor.putFloat(HIGH_SCORE, currentGame.highscore);
         editor.putInt(GAME_STATE, currentGame.gameState);
+        editor.putBoolean(IS_DEMO_MODE, currentGame.demoModeRunning);
         editor.commit();
-
     }
 
     private void load() {
@@ -298,6 +326,8 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
 
         setScores((int) settings.getFloat(SCORE, currentGame.score), (int) settings.getFloat(HIGH_SCORE, currentGame.highscore));
         currentGame.gameState = settings.getInt(GAME_STATE, currentGame.gameState);
+        currentGame.demoModeRunning = settings.getBoolean(IS_DEMO_MODE, currentGame.demoModeRunning);
+        currentGame.resumeGame(true);
     }
 
     @Override

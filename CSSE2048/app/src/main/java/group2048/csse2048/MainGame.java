@@ -10,6 +10,8 @@ import android.preference.PreferenceManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by robbylagen on 4/12/17.
@@ -22,6 +24,7 @@ public class MainGame {
         public void playSwoosh();
         public void onScoreUpdated();
         public void endDemo();
+        public void runDemo();
     }
 
     public Board board = null;
@@ -335,6 +338,30 @@ public class MainGame {
             }
         }
         return false;
+    }
+
+    public void resumeGame(Boolean resume) {
+        if (resume) {
+            if (demoModeRunning) {
+                new AlertDialog.Builder(mainContext)
+                        .setTitle("Would you like to resume the demo?")
+                        .setPositiveButton("Yes",  new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                if (mainGameInterface != null) {
+                                    mainGameInterface.runDemo();
+                                }
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                newGame();
+                                demoModeRunning = false;
+
+                            }
+                        }).show();
+            }
+        }
+
     }
 
     void endGame(boolean restarting) {
