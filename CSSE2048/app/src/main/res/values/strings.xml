@@ -1,6 +1,8 @@
 <resources>
     <string name="play_again">Do you want to play again?</string>
+    <string name="endDemo">Your turn!</string>
     <string name="finalScore">Your score: %d</string>
+    <string name="demoScore">Demo score: %d</string>
     <string name="basicScore">Score: %d</string>
     <string name="zeroScore">Score: 0</string>
     <string name="basicHighScore">Highscore: %d</string>

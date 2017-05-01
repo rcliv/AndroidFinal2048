@@ -212,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
                 currentGame.demoModeRunning = true;
                 demoButton.setText("Stop Demo");
                 timer = new Timer();
-                timer.scheduleAtFixedRate(task, 0, 400);
+                timer.scheduleAtFixedRate(task, 0, 500);
             }
         }
     };
@@ -303,5 +303,16 @@ public class MainActivity extends AppCompatActivity implements IMainGame, MainGa
                 swoosh = MediaPlayer.create(this, R.raw.swoosh);
             } swoosh.start();
         } catch(Exception e) { e.printStackTrace(); }
+    }
+
+    @Override
+    public void endDemo() {
+        if (currentGame.demoModeRunning) {
+            currentGame.newGame();
+            currentGame.demoModeRunning = false;
+            demoButton.setText("Demo");
+            timer.cancel();
+            timer = null;
+        }
     }
 }

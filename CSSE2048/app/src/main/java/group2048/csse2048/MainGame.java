@@ -21,6 +21,7 @@ public class MainGame {
         public void onNewGameStarted();
         public void playSwoosh();
         public void onScoreUpdated();
+        public void endDemo();
     }
 
     public Board board = null;
@@ -36,6 +37,8 @@ public class MainGame {
     private boolean isSoundOn = true;
 
     private boolean movedLeft = false;
+    private boolean movedRight = false;
+    private boolean movedUp = false;
     private final Context mainContext;
     private final BoardView mainBoardView;
     private MainGameInterface mainGameInterface = null;
@@ -341,25 +344,56 @@ public class MainGame {
             saveHighScore();
         }
         if (gameLost()) {
-            new AlertDialog.Builder(mainContext)
-                    .setTitle("Game Over")
-                    .setMessage(String.format(resources.getString(R.string.finalScore), score))
-                    .setPositiveButton(R.string.play_again, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            newGame();
-                        }
-                    })
-                    .show();
+            if (demoModeRunning) {
+                new AlertDialog.Builder(mainContext)
+                        .setTitle("Demo Over")
+                        .setMessage(String.format(resources.getString(R.string.demoScore), score))
+                        .setPositiveButton(R.string.endDemo, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                newGame();
+                                if (mainGameInterface != null) {
+                                    mainGameInterface.endDemo();
+                                }
+                            }
+                        })
+                        .show();
+            } else {
+                new AlertDialog.Builder(mainContext)
+                        .setTitle("Game Over")
+                        .setMessage(String.format(resources.getString(R.string.finalScore), score))
+                        .setPositiveButton(R.string.play_again, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                newGame();
+
+                            }
+                        })
+                        .show();
+            }
         } else if (!restarting) {
-            new AlertDialog.Builder(mainContext)
-                    .setTitle("You Win!")
-                    .setMessage(String.format(resources.getString(R.string.finalScore), score))
-                    .setPositiveButton(R.string.play_again, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            newGame();
-                        }
-                    })
-                    .show();
+            if (demoModeRunning) {
+                new AlertDialog.Builder(mainContext)
+                        .setTitle("Demo Won!")
+                        .setMessage(String.format(resources.getString(R.string.demoScore), score))
+                        .setPositiveButton(R.string.endDemo, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                newGame();
+                                if (mainGameInterface != null) {
+                                    mainGameInterface.endDemo();
+                                }
+                            }
+                        })
+                        .show();
+            } else {
+                new AlertDialog.Builder(mainContext)
+                        .setTitle("You Win!")
+                        .setMessage(String.format(resources.getString(R.string.finalScore), score))
+                        .setPositiveButton(R.string.play_again, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                newGame();
+                            }
+                        })
+                        .show();
+            }
         }
     }
 
@@ -369,14 +403,34 @@ public class MainGame {
 
     public void startDemo() {
         if (demoModeRunning && gameState == GAME_CONTINUES) {
-            if (movedLeft == false && canMoveLeft()) {
+            if (movedRight && (canMoveUp() || canMoveLeft())) {
+                movedRight = false;
+                BoardSpot spot = new BoardSpot(0, 0);
+                if (board.isBoardSpotOccupied(spot) && canMoveUp()) {
+                    movedUp = true;
+                    move(IMainGame.DIRECTIONS.UP.ordinal());
+                } else {
+                    if (canMoveLeft()) {
+                        movedLeft = true;
+                        move(IMainGame.DIRECTIONS.LEFT.ordinal());
+                    } else {
+                        movedUp = true;
+                        move(IMainGame.DIRECTIONS.UP.ordinal());
+                    }
+                }
+            } else if (movedUp && canMoveLeft()) {
+                movedUp = false;
+                move(IMainGame.DIRECTIONS.LEFT.ordinal());
+            } else if (!movedLeft && canMoveLeft()) {
                 movedLeft = true;
                 move(IMainGame.DIRECTIONS.LEFT.ordinal());
             } else if (canMoveUp()) {
                 movedLeft = false;
+                movedUp = true;
                 move(IMainGame.DIRECTIONS.UP.ordinal());
             } else if (canMoveRight()) {
                 movedLeft = false;
+                movedRight = true;
                 move(IMainGame.DIRECTIONS.RIGHT.ordinal());
             } else if (canMoveDown()) {
                 movedLeft = false;
